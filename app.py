@@ -2,7 +2,9 @@ from flask import Flask, jsonify, request
 from TextSummarizer  import TextSummarizer
 from KeywordExtractor import KeywordExtractor
 from Translator import Translator
-from access_token import access_token
+import access_token
+import model_path
+from kobert import kobert_emotion_classifier as kec
 
 # REST API 호출, 이미지 파일 처리에 필요한 라이브러리
 from PyKakao import Karlo
@@ -11,23 +13,23 @@ from PIL import Image
 
 app = Flask(__name__)
 
-model_path = 'path/to/your/model.h5'
-
 @app.route("/image", methods=['POST'])
 def image():
     text = request.get_data()
 
+    #텍스트 요약
     summary = ', '.join(summarize(text))
+    
+    #키워드 추출
     keyword = ', '.join(extract_keyword(text)) if len(text) > 1 else text[0]
-    print(summary + ', ' + keyword)
-    prompt = translate(summary + ', ' + keyword)
 
-    # 감정 분석
-    # loaded_model = load_model(model_path)
-    # result = loaded_model.predict()
-    # prompt += ', ' + BERTClassifier.predict()
-    prompt += ', sad'                 # @Todo 모델 적용 후 변경 
+    #감정 분석
+    emotion = kec.predict(model_path.MODEL_PATH, summary)
 
+    #텍스트 번역
+    prompt = translate(summary + ', ' + keyword + ', ' + emotion)
+
+    #이미지 생성
     response = make_image(prompt)
     # 응답의 첫 번째 이미지 생성 결과 출력하기
     result = Image.open(urllib.request.urlopen(response.get("images")[0].get("image")))
