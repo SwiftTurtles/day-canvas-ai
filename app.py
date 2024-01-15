@@ -45,11 +45,13 @@ def image():
 
 
 def make_image(prompt):
+    positive_prompt = 'Create an image in the style of Claude Monet, mordern, oil paint, no english, without any accompanying text, without textual description'
+    negative_prompt = 'any accompanying text, textual description, object out of frame, out of frame, body out of frame, bad anatomy, distortion, disfigured, poorly drawn face, watermark'
     r = requests.post(
         'https://api.kakaobrain.com/v2/inference/karlo/t2i',
         json = {
-            'prompt': prompt,   # @Todo 화풍 등 이미지 일관성을 위해 추가  
-            'negative_prompt': "object out of frame, out of frame, body out of frame, bad anatomy, distortion, disfigured, poorly drawn face, watermark"
+            'prompt': prompt + positive_prompt,
+            'negative_prompt': negative_prompt
         },
         headers = {
             'Authorization': f'KakaoAK {access_token.REST_API_KEY}',
